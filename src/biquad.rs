@@ -57,3 +57,59 @@ impl Biquad {
         yn
     }
 }
+
+pub struct AudioFilter {
+    parameters: AudioFilterParameters,
+    biquad: Biquad,
+    sample_rate: f64,
+}
+
+impl AudioFilter {
+    pub fn new() -> AudioFilter {
+        AudioFilter {
+            parameters: AudioFilterParameters::new(),
+            biquad: Biquad::new(),
+            sample_rate: 44100.0,
+        }
+    }
+    
+    pub fn get_params(&self) -> AudioFilterParameters {
+        self.parameters // does this move?
+    }
+    
+    pub fn set_params(&mut self, params: AudioFilterParameters) {
+        self.parameters = params;
+        
+        if self.parameters.q <= 0.0 {
+            self.parameters.q = 0.707;
+        }
+        
+        self.calculate_filter_coeffs();
+    }
+    
+    pub fn reset(&self) {}
+    
+    pub fn process_sample(&mut self, xn: f64) -> f64 {
+        self.biquad.coeff_array[6] * xn + self.biquad.coeff_array[5] * self.biquad.process_sample(xn)
+    }
+    
+    pub fn set_sample_rate(&mut self, sample_rate: f64) {
+        self.sample_rate = sample_rate;
+    }
+    
+    pub fn calculate_filter_coeffs(&mut self) {
+        self .biquad.coeff_array.fill(0.0);
+        
+        self.biquad.coeff_array[0] = 1.0; // a0
+        self.biquad.coeff_array[5] = 1.0; // c0
+        self.biquad.coeff_array[6] = 0.0; // d0
+        
+        let filter_algorithm = self.parameters.algorithm;
+        let fc = self.parameters.fc;
+        let q = self.parameters.q;
+        
+        if filter_algorithm == FilterAlgorithm::Hpf2 {
+            
+        }
+    }
+}
