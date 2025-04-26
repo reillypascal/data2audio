@@ -1,8 +1,10 @@
 // use std::{env, fs};
 use std::fs;
-use std::path::{self, Path, PathBuf, StripPrefixError}; 
+// use std::path::{self, Path, PathBuf, StripPrefixError}; 
+use std::path::{self, PathBuf};
 use hound;
-use walkdir::{DirEntry, WalkDir};
+// use walkdir::{DirEntry, WalkDir};
+use walkdir::WalkDir;
 
 fn main() {
     // let current_dir = env::current_dir().expect("Error getting directory");
