@@ -33,32 +33,9 @@ fn main() {
                         write_path.set_extension("wav");
                         write_file_as_wav(converted_data, write_path);
                     }
-                    
-                    
-                    // if let Ok(mut write_path) = replace_prefix(entry.path().to_path_buf(), "input/", "output/") {
-                    //     let prefix = write_path.parent().expect("Could not get parent");
-                    //     fs::create_dir_all(prefix).expect("Could not create dir");
-                        
-                    //     write_path.set_extension("wav");
-                        
-                    //     write_file_as_wav(converted_data, write_path);
-                    // }
                 }
             }
         });
-    
-    // // import file as Vec<u8>
-    // let data: Vec<u8> = fs::read("input/OFXLoader").expect("Error reading file");
-    
-    // // convert to Vec<i16>
-    // let mut converted_data: Vec<i16> = Vec::new();
-    
-    // let iter = data.chunks_exact(2);
-    // for item in iter {
-    //     converted_data.push(i16::from_le_bytes(item.try_into().unwrap()));
-    // }
-    
-    // write_file_as_wav(converted_data, );
 }
 
 // fn replace_prefix(p: impl AsRef<Path>, from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<PathBuf, StripPrefixError> {
