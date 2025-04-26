@@ -1,5 +1,5 @@
 [package]
-name = "data_to_audio"
+name = "data2audio"
 version = "0.1.0"
 edition = "2021"
 
