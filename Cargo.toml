@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 hound = "3.5.1"
+walkdir = "2.5.0"
