@@ -6,6 +6,8 @@ use hound;
 // use walkdir::{DirEntry, WalkDir};
 use walkdir::WalkDir;
 
+pub mod biquad;
+
 fn main() {
     // let current_dir = env::current_dir().expect("Error getting directory");
     // read dir
