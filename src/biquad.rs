@@ -109,7 +109,21 @@ impl AudioFilter {
         let q = self.parameters.q;
         
         if filter_algorithm == FilterAlgorithm::Hpf2 {
+            let theta_c = (2.0 * PI * fc) / self.sample_rate;
+            let d = 1.0 / q;
             
+            let beta_numerator = 1.0 - (d/2.0) * f64::sin(theta_c);
+            let beta_denominator = 1.0 + (d/2.0) * f64::sin(theta_c);
+            let beta = 0.5 * (beta_numerator / beta_denominator);
+            
+            let gamma = (0.5 + beta) * f64::cos(theta_c);
+            let alpha = (0.5 + beta + gamma) / 2.0;
+            
+            self.biquad.coeff_array[0] = alpha;         // a0
+            self.biquad.coeff_array[1] = -alpha * 2.0;  // a1
+            self.biquad.coeff_array[2] = alpha;         // a2
+            self.biquad.coeff_array[3] = -2.0 * gamma;  // b1
+            self.biquad.coeff_array[4] = 2.0 * beta;    // b2
         }
     }
 }

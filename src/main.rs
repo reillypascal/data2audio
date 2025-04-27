@@ -17,9 +17,9 @@ fn main() {
         .for_each(|entry| {
             if let Ok(metadata) = entry.metadata() {
                 if metadata.is_file() {
-                    // import file as Vec<u8>
+                    // ---- IMPORT FILE ----
+                    // import as Vec<u8>
                     let data: Vec<u8> = fs::read(entry.path()).expect("Error reading file");
-                    
                     // convert to Vec<i16>
                     let mut converted_data: Vec<i16> = Vec::new();
                     
@@ -28,14 +28,27 @@ fn main() {
                         converted_data.push(i16::from_le_bytes(item.try_into().unwrap()));
                     }
                     
+                    // ---- FILTERING ----
+                    // make filter
+                    let mut filter = biquad::AudioFilter::new();
+                    filter.calculate_filter_coeffs();
+                    // vec in which to process sound
+                    let mut filtered_vec = Vec::<i16>::new();
+                    // filter audio
+                    for sample in &converted_data {
+                        let float_samp = *sample as f64;
+                        let filtered_samp = filter.process_sample(float_samp * 0.4);
+                        filtered_vec.push(filtered_samp as i16);
+                    }
+                    
+                    // ---- OUTPUT FILE ----
                     // write all files into output directory
                     let mut write_path = PathBuf::from("output/");
-                    
                     // entry.path().file_name() returns an Option
                     if let Some(file_name) = entry.path().file_name() {
                         write_path.push(file_name);
                         write_path.set_extension("wav");
-                        write_file_as_wav(converted_data, write_path);
+                        write_file_as_wav(filtered_vec, write_path);
                     }
                 }
             }
