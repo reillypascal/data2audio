@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.5.37", features = ["derive"] }
 hound = "3.5.1"
 walkdir = "2.5.0"

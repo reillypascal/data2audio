@@ -2,6 +2,7 @@
 use std::fs;
 // use std::path::{self, Path, PathBuf, StripPrefixError}; 
 use std::path::{self, PathBuf};
+use clap::{Parser, Subcommand};
 use hound;
 // use walkdir::{DirEntry, WalkDir};
 use walkdir::WalkDir;
@@ -10,8 +11,19 @@ pub mod biquad;
 
 fn main() {
     // let current_dir = env::current_dir().expect("Error getting directory");
+    
+    // ---- CLI ARGUMENTS ----
+    let args = Args::parse();
+    // if/else is expression, can be assigned
+    let in_path = if let Some(path) = args.in_path {
+        path
+    } else {
+        String::from("input")
+    };
+    
+    // ---- GET & PROCESS FILES ----
     // read dir
-    WalkDir::new("input/")
+    WalkDir::new(in_path)
         .into_iter()
         .filter_map(|entry| entry.ok())
         .for_each(|entry| {
@@ -25,7 +37,7 @@ fn main() {
                     
                     let iter = data.chunks_exact(2);
                     for item in iter {
-                        converted_data.push(i16::from_le_bytes(item.try_into().unwrap()));
+                        converted_data.push(i16::from_le_bytes(item.try_into().expect("Could not convert to 16-bit")));
                     }
                     
                     // ---- FILTERING ----
@@ -57,6 +69,20 @@ fn main() {
 
 // fn replace_prefix(p: impl AsRef<Path>, from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<PathBuf, StripPrefixError> {
 //   p.as_ref().strip_prefix(from).map(|p| to.as_ref().join(p))
+// }
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    in_path: Option<String>,
+    out_path: Option<String>,
+    // #[command(subcommand)]
+    // cmd: Commands
+}
+
+// #[derive(Subcommand, Debug, Clone)]
+// enum Commands {
+//     Min(String),
 // }
 
 fn write_file_as_wav(data: Vec<i16>, name: path::PathBuf) {
