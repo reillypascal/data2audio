@@ -86,8 +86,16 @@ fn main() {
                     
                     // ---- OUTPUT FILE ----
                     // write all files into output directory
-                    // args.output as ref so don't move — ::from() accepts string slice?
+                    // args.output as ref so don't move
                     let mut write_path = PathBuf::from(&args.output);
+                    // create output dir if doesn't exist - create_dir returns Result<T,E>
+                    let out_dir = create_dir(&args.output);
+                    match out_dir {
+                        Ok(()) => {},
+                        Err(e) => {
+                            eprintln!("{}", e)
+                        },
+                    };
                     // entry.path().file_name() returns an Option
                     if let Some(file_name) = entry.path().file_name() {
                         write_path.push(file_name);
@@ -127,7 +135,13 @@ enum SampleFormat {
     // Nms32k,
 }
 
-// ---- WAV WRITER ----
+// ---- WRITING WAVs ----
+fn create_dir(dir: &str) -> std::io::Result<()> {
+    // create_dir_all - like multiple mkdir calls
+    fs::create_dir_all(dir.to_string())?;
+    Ok(())
+}
+
 fn write_file_as_wav(data: Vec<i16>, name: path::PathBuf) {
     // write WAV file
     // spec
