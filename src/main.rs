@@ -2,7 +2,8 @@
 use std::fs;
 // use std::path::{self, Path, PathBuf, StripPrefixError}; 
 use std::path::{self, PathBuf};
-use clap::{Parser, Subcommand};
+// use clap::{Parser, ArgEnum};
+use clap::{Parser, ValueEnum};
 use hound;
 // use walkdir::{DirEntry, WalkDir};
 use walkdir::WalkDir;
@@ -15,15 +16,10 @@ fn main() {
     // ---- CLI ARGUMENTS ----
     let args = Args::parse();
     // if/else is expression, can be assigned
-    let in_path = if let Some(path) = args.in_path {
-        path
-    } else {
-        String::from("input")
-    };
     
     // ---- GET & PROCESS FILES ----
-    // read dir
-    WalkDir::new(in_path)
+    // read dir - input as ref so don't move
+    WalkDir::new(&args.input)
         .into_iter()
         .filter_map(|entry| entry.ok())
         .for_each(|entry| {
@@ -32,13 +28,39 @@ fn main() {
                     // ---- IMPORT FILE ----
                     // import as Vec<u8>
                     let data: Vec<u8> = fs::read(entry.path()).expect("Error reading file");
-                    // convert to Vec<i16>
-                    let mut converted_data: Vec<i16> = Vec::new();
                     
-                    let iter = data.chunks_exact(2);
-                    for item in iter {
-                        converted_data.push(i16::from_le_bytes(item.try_into().expect("Could not convert to 16-bit")));
-                    }
+                    // // convert to Vec<i16>
+                    // let mut converted_data: Vec<i16> = Vec::new();
+                    
+                    // let iter = data.chunks_exact(2);
+                    // for item in iter {
+                    //     converted_data.push(i16::from_le_bytes(item.try_into().expect("Could not convert to 16-bit")));
+                    // }
+                    
+                    // need to filter as f64 anyway, so best to do in match arms here for consistency
+                    let converted_data: Vec<f64> = match args.format {
+                        SampleFormat::UInt8 => {
+                            data
+                                .iter()
+                                .map(|chunk| {
+                                    ((*chunk as u16) << 8) as f64
+                                }).collect()
+                        }
+                        SampleFormat::Int16 => {
+                            data
+                                .chunks_exact(2)
+                                .map(|chunks| {
+                                    i16::from_le_bytes(chunks.try_into().expect("Could not import as 16-bit")) as f64
+                                }).collect()
+                        }
+                        SampleFormat::Int32 => {
+                            data
+                                .chunks_exact(4)
+                                .map(|chunks| {
+                                    (i32::from_le_bytes(chunks.try_into().expect("Could not import as 32-bit")) >> 16) as f64
+                                }).collect()
+                        }
+                    };
                     
                     // ---- FILTERING ----
                     // make filter
@@ -48,14 +70,14 @@ fn main() {
                     let mut filtered_vec = Vec::<i16>::new();
                     // filter audio
                     for sample in &converted_data {
-                        let float_samp = *sample as f64;
-                        let filtered_samp = filter.process_sample(float_samp * 0.4);
+                        let filtered_samp = filter.process_sample(*sample * 0.4);
                         filtered_vec.push(filtered_samp as i16);
                     }
                     
                     // ---- OUTPUT FILE ----
                     // write all files into output directory
-                    let mut write_path = PathBuf::from("output/");
+                    // args.output as ref so don't move
+                    let mut write_path = PathBuf::from(&args.output);
                     // entry.path().file_name() returns an Option
                     if let Some(file_name) = entry.path().file_name() {
                         write_path.push(file_name);
@@ -71,19 +93,31 @@ fn main() {
 //   p.as_ref().strip_prefix(from).map(|p| to.as_ref().join(p))
 // }
 
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
+// ---- CLI PARSER ----
+#[derive(Parser, Debug)]
 struct Args {
-    in_path: Option<String>,
-    out_path: Option<String>,
-    // #[command(subcommand)]
-    // cmd: Commands
+    #[arg(short = 'i', long, default_value_t = String::from("input"))]
+    input: String,
+    
+    #[arg(short = 'o', long, default_value_t = String::from("output"))]
+    output: String,
+    
+    #[arg(short = 'm', long, default_value_t = 0)]
+    min: usize,
+    
+    #[clap(short = 'f', long, value_enum, default_value_t=SampleFormat::Int16)]
+    format: SampleFormat,
 }
 
-// #[derive(Subcommand, Debug, Clone)]
-// enum Commands {
-//     Min(String),
-// }
+#[derive(ValueEnum, Clone, Debug)]
+enum SampleFormat {
+    UInt8,
+    Int16,
+    // Int24,
+    Int32,
+    // Float32,
+    // Float64,
+}
 
 fn write_file_as_wav(data: Vec<i16>, name: path::PathBuf) {
     // write WAV file
