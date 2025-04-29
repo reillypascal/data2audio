@@ -13,24 +13,29 @@ fn main() {
     let args = Args::parse();
     
     // ---- GET & PROCESS FILES ----
-    // read dir - input as ref so don't move
+    // read dir - input as ref so don't move — ::from() accepts string slice?
     WalkDir::new(&args.input)
         .into_iter()
         .filter_map(|entry| entry.ok())
         .for_each(|entry| {
+            // extract metadata from Result<T,E> for each entry in dir
             if let Ok(metadata) = entry.metadata() {
-                if metadata.is_file() {
+                // if it's a file and greater/equal to min size we're looking at
+                if metadata.is_file() && metadata.len() >= args.min {
                     // ---- IMPORT FILE ----
                     // import as Vec<u8>
                     let data: Vec<u8> = fs::read(entry.path()).expect("Error reading file");
                     
                     // ---- CONVERT BASED ON SAMPLE FORMAT ----
-                    // need to filter as f64 anyway, so best to do in match arms here for consistency
+                    // need to filter as f64 anyway, so best to do in 
+                    // match arms here for consistency
                     let converted_data: Vec<f64> = match args.format {
                         SampleFormat::Uint8 => {
                             data
                                 .iter()
                                 .map(|chunk| {
+                                    // bit-shift based on using 16-bit wav at output
+                                    // need to do as 16-bit to avoid overflow in shift
                                     ((*chunk as u16) << 8) as f64
                                 }).collect()
                         }
@@ -45,6 +50,8 @@ fn main() {
                             data
                                 .chunks_exact(3)
                                 .map(|chunks| {
+                                    // no i24, so we take 3 bytes + 0x00 
+                                    // to fill out hi byte in i32
                                     let low_part: [u8; 3] = chunks.try_into().expect("Could not import as 24-bit");
                                     let high_part: [u8; 1] = [0x00];
                                     let mut joined: [u8; 4] = [0; 4];
@@ -59,6 +66,7 @@ fn main() {
                             data
                                 .chunks_exact(4)
                                 .map(|chunks| {
+                                    // bit-shift based on using 16-bit wav at output
                                     (i32::from_le_bytes(chunks.try_into().expect("Could not import as 32-bit")) >> 16) as f64
                                 }).collect()
                         }
@@ -78,7 +86,7 @@ fn main() {
                     
                     // ---- OUTPUT FILE ----
                     // write all files into output directory
-                    // args.output as ref so don't move
+                    // args.output as ref so don't move — ::from() accepts string slice?
                     let mut write_path = PathBuf::from(&args.output);
                     // entry.path().file_name() returns an Option
                     if let Some(file_name) = entry.path().file_name() {
@@ -101,7 +109,7 @@ struct Args {
     output: String,
     
     #[arg(short = 'm', long, default_value_t = 0)]
-    min: usize,
+    min: u64,
     
     #[clap(short = 'f', long, value_enum, default_value_t=SampleFormat::Int16)]
     format: SampleFormat,
