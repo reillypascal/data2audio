@@ -1,8 +1,6 @@
-// use std::{env, fs};
 use std::fs;
 // use std::path::{self, Path, PathBuf, StripPrefixError}; 
 use std::path::{self, PathBuf};
-// use clap::{Parser, ArgEnum};
 use clap::{Parser, ValueEnum};
 use hound;
 // use walkdir::{DirEntry, WalkDir};
@@ -10,12 +8,9 @@ use walkdir::WalkDir;
 
 pub mod biquad;
 
-fn main() {
-    // let current_dir = env::current_dir().expect("Error getting directory");
-    
+fn main() {    
     // ---- CLI ARGUMENTS ----
     let args = Args::parse();
-    // if/else is expression, can be assigned
     
     // ---- GET & PROCESS FILES ----
     // read dir - input as ref so don't move
@@ -28,14 +23,6 @@ fn main() {
                     // ---- IMPORT FILE ----
                     // import as Vec<u8>
                     let data: Vec<u8> = fs::read(entry.path()).expect("Error reading file");
-                    
-                    // // convert to Vec<i16>
-                    // let mut converted_data: Vec<i16> = Vec::new();
-                    
-                    // let iter = data.chunks_exact(2);
-                    // for item in iter {
-                    //     converted_data.push(i16::from_le_bytes(item.try_into().expect("Could not convert to 16-bit")));
-                    // }
                     
                     // ---- CONVERT BASED ON SAMPLE FORMAT ----
                     // need to filter as f64 anyway, so best to do in match arms here for consistency
@@ -104,10 +91,6 @@ fn main() {
         });
 }
 
-// fn replace_prefix(p: impl AsRef<Path>, from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<PathBuf, StripPrefixError> {
-//   p.as_ref().strip_prefix(from).map(|p| to.as_ref().join(p))
-// }
-
 // ---- CLI PARSER ----
 #[derive(Parser, Debug)]
 struct Args {
@@ -130,8 +113,10 @@ enum SampleFormat {
     Int16,
     Int24,
     Int32,
-    // Float32,
-    // Float64,
+    // Vox,
+    // Nms16k,
+    // Nms24k,
+    // Nms32k,
 }
 
 // ---- WAV WRITER ----
