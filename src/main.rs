@@ -37,9 +37,10 @@ fn main() {
                     //     converted_data.push(i16::from_le_bytes(item.try_into().expect("Could not convert to 16-bit")));
                     // }
                     
+                    // ---- CONVERT BASED ON SAMPLE FORMAT ----
                     // need to filter as f64 anyway, so best to do in match arms here for consistency
                     let converted_data: Vec<f64> = match args.format {
-                        SampleFormat::UInt8 => {
+                        SampleFormat::Uint8 => {
                             data
                                 .iter()
                                 .map(|chunk| {
@@ -51,6 +52,20 @@ fn main() {
                                 .chunks_exact(2)
                                 .map(|chunks| {
                                     i16::from_le_bytes(chunks.try_into().expect("Could not import as 16-bit")) as f64
+                                }).collect()
+                        }
+                        SampleFormat::Int24 => {
+                            data
+                                .chunks_exact(3)
+                                .map(|chunks| {
+                                    let low_part: [u8; 3] = chunks.try_into().expect("Could not import as 24-bit");
+                                    let high_part: [u8; 1] = [0x00];
+                                    let mut joined: [u8; 4] = [0; 4];
+                                    
+                                    joined[3..].copy_from_slice(&high_part);
+                                    joined[..3].copy_from_slice(&low_part);
+                                    
+                                    (i32::from_le_bytes(joined) >> 8) as f64
                                 }).collect()
                         }
                         SampleFormat::Int32 => {
@@ -111,14 +126,15 @@ struct Args {
 
 #[derive(ValueEnum, Clone, Debug)]
 enum SampleFormat {
-    UInt8,
+    Uint8,
     Int16,
-    // Int24,
+    Int24,
     Int32,
     // Float32,
     // Float64,
 }
 
+// ---- WAV WRITER ----
 fn write_file_as_wav(data: Vec<i16>, name: path::PathBuf) {
     // write WAV file
     // spec
