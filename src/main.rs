@@ -13,7 +13,7 @@ fn main() {
     let args = Args::parse();
     
     // ---- GET & PROCESS FILES ----
-    // read dir - input as ref so don't move — ::from() accepts string slice?
+    // WalkDir "walks" recursively through a directory and all its subfolders
     WalkDir::new(&args.input)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -43,6 +43,7 @@ fn main() {
                             data
                                 .chunks_exact(2)
                                 .map(|chunks| {
+                                    // from_le_bytes() takes array of bytes and converts to a single little-endian integer
                                     i16::from_le_bytes(chunks.try_into().expect("Could not import as 16-bit")) as f64
                                 }).collect()
                         }
@@ -88,7 +89,7 @@ fn main() {
                     // write all files into output directory
                     // args.output as ref so don't move
                     let mut write_path = PathBuf::from(&args.output);
-                    // create output dir if doesn't exist - create_dir returns Result<T,E>
+                    // create output dir if doesn't exist - create_dir returns Result<T,E>, so match it
                     let out_dir = create_dir(&args.output);
                     match out_dir {
                         Ok(()) => {},
@@ -96,7 +97,7 @@ fn main() {
                             eprintln!("{}", e)
                         },
                     };
-                    // entry.path().file_name() returns an Option
+                    // entry.path().file_name() returns an Option, so if let Some() handles/extracts value
                     if let Some(file_name) = entry.path().file_name() {
                         write_path.push(file_name);
                         write_path.set_extension("wav");
@@ -121,6 +122,9 @@ struct Args {
     
     #[clap(short = 'f', long, value_enum, default_value_t=SampleFormat::Int16)]
     format: SampleFormat,
+    
+    #[arg(short = 'F', long, default_value_t = true)]
+    filter: bool,
 }
 
 #[derive(ValueEnum, Clone, Debug)]
