@@ -1,12 +1,15 @@
-use std::fs;
 // use std::path::{self, Path, PathBuf, StripPrefixError}; 
+// use walkdir::{DirEntry, WalkDir};
+// std
+use std::fs;
 use std::path::{self, PathBuf};
+// crates
 use clap::{Parser, ValueEnum};
 use hound;
-// use walkdir::{DirEntry, WalkDir};
 use walkdir::WalkDir;
-
+// modules
 pub mod biquad;
+pub mod vox;
 
 fn main() {    
     // ---- CLI ARGUMENTS ----
@@ -51,12 +54,12 @@ fn main() {
                             data
                                 .chunks_exact(3)
                                 .map(|chunks| {
-                                    // no i24, so we take 3 bytes + 0x00 
-                                    // to fill out hi byte in i32
+                                    // get values from chunks_exact(3), put in array
                                     let low_part: [u8; 3] = chunks.try_into().expect("Could not import as 24-bit");
+                                    // no i24, so we add this 0x00 to fill out hi byte in i32
                                     let high_part: [u8; 1] = [0x00];
+                                    // copy to "joined" from low/hi parts as slices
                                     let mut joined: [u8; 4] = [0; 4];
-                                    
                                     joined[3..].copy_from_slice(&high_part);
                                     joined[..3].copy_from_slice(&low_part);
                                     
@@ -70,6 +73,22 @@ fn main() {
                                     // bit-shift based on using 16-bit wav at output
                                     (i32::from_le_bytes(chunks.try_into().expect("Could not import as 32-bit")) >> 16) as f64
                                 }).collect()
+                        }
+                        SampleFormat::Vox => {
+                            let mut output: Vec<f64> = Vec::new();
+                            let mut vox_state = vox::VoxState::new();
+                            data
+                                .iter()
+                                // using for_each and...
+                                .for_each(|chunk| {
+                                    for nibble in [(chunk >> 4) & 0xf, chunk & 0xf].iter() {
+                                        // vox output is 12-bit, from i16::MIN <-> i16::MAX/2
+                                        // but *don't* shift — changes spectrum, envelope!
+                                        output.push(vox_state.vox_decode(nibble) as f64);
+                                    }
+                                });
+                            // ...returning outside of pipeline since we need to handle *two* nibbles per element in iter()
+                            output
                         }
                     };
                     
@@ -87,9 +106,8 @@ fn main() {
                     
                     // ---- OUTPUT FILE ----
                     // write all files into output directory
-                    // args.output as ref so don't move
                     let mut write_path = PathBuf::from(&args.output);
-                    // create output dir if doesn't exist - create_dir returns Result<T,E>, so match it
+                    // create output dir if doesn't exist - create_dir returns Result<T,E>, so match it and print if err
                     let out_dir = create_dir(&args.output);
                     match out_dir {
                         Ok(()) => {},
@@ -133,10 +151,7 @@ enum SampleFormat {
     Int16,
     Int24,
     Int32,
-    // Vox,
-    // Nms16k,
-    // Nms24k,
-    // Nms32k,
+    Vox,
 }
 
 // ---- WRITING WAVs ----
