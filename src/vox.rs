@@ -35,6 +35,7 @@ impl VoxState {
         // update for next time through; ss(n+1) into z-1 from block diagram
         self.step_index = step_index;
         // return updated predictor, which is also saved for next time; X(n) into z-1
+        // scale from 12-bit to 16-bit; 16 = 2^4, or 4 extra bits
         self.predictor * 16
     }
 }
