@@ -12,7 +12,7 @@ The code will default to expecting your input file(s) and/or folder(s) to be in 
   - `-i, --input`      subfolder in which to look for files to import (string)
   - `-o, --output`     subfolder in which to write .WAV files (string)
   - `-m, --min`        minimum file size to convert (in bytes) — small files (< 1MB) are often less useful (int)
-  - `-f, --format`     sample format in which to read the files (string: options are 'uint8', 'int16', 'int24', and 'int32', with more to come)
+  - `-f, --format`     sample format in which to read the files (string: options are 'uint8', 'int16', 'int24', 'int32', and 'vox', with more to come)
 
 ### Usage Examples
 - Note the extra two dashes (`--`) between `cargo run` and the command-line options. This sends your options to the running program, rather than to cargo.
