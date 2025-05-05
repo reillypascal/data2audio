@@ -1,4 +1,4 @@
-// use std::path::{self, Path, PathBuf, StripPrefixError}; 
+// use std::path::{self, Path, PathBuf, StripPrefixError};
 // use walkdir::{DirEntry, WalkDir};
 // std
 use std::fs;
@@ -11,10 +11,10 @@ use walkdir::WalkDir;
 pub mod biquad;
 pub mod vox;
 
-fn main() {    
+fn main() {
     // ---- CLI ARGUMENTS ----
     let args = Args::parse();
-    
+
     // ---- GET & PROCESS FILES ----
     // WalkDir "walks" recursively through a directory and all its subfolders
     WalkDir::new(&args.input)
@@ -28,59 +28,64 @@ fn main() {
                     // ---- IMPORT FILE ----
                     // import as Vec<u8>
                     let data: Vec<u8> = fs::read(entry.path()).expect("Error reading file");
-                    
+
                     // ---- CONVERT BASED ON SAMPLE FORMAT ----
-                    // need to filter as f64 anyway, so best to do in 
+                    // need to filter as f64 anyway, so best to do in
                     // match arms here for consistency
                     let converted_data: Vec<f64> = match args.format {
                         SampleFormat::Uint8 => {
-                            data
-                                .iter()
+                            data.iter()
                                 .map(|chunk| {
                                     // bit-shift based on using 16-bit wav at output
                                     // need to do as 16-bit to avoid overflow in shift
                                     ((*chunk as u16) << 8) as f64
-                                }).collect()
+                                })
+                                .collect()
                         }
                         SampleFormat::Int16 => {
-                            data
-                                .chunks_exact(2)
+                            data.chunks_exact(2)
                                 .map(|chunks| {
                                     // from_le_bytes() takes array of bytes and converts to a single little-endian integer
-                                    i16::from_le_bytes(chunks.try_into().expect("Could not import as 16-bit")) as f64
-                                }).collect()
+                                    i16::from_le_bytes(
+                                        chunks.try_into().expect("Could not import as 16-bit"),
+                                    ) as f64
+                                })
+                                .collect()
                         }
                         SampleFormat::Int24 => {
-                            data
-                                .chunks_exact(3)
+                            data.chunks_exact(3)
                                 .map(|chunks| {
                                     // get values from chunks_exact(3), put in array
-                                    let low_part: [u8; 3] = chunks.try_into().expect("Could not import as 24-bit");
+                                    let low_part: [u8; 3] =
+                                        chunks.try_into().expect("Could not import as 24-bit");
                                     // no i24, so we add this 0x00 to fill out hi byte in i32
                                     let high_part: [u8; 1] = [0x00];
                                     // copy to "joined" from low/hi parts as slices
                                     let mut joined: [u8; 4] = [0; 4];
                                     joined[3..].copy_from_slice(&high_part);
                                     joined[..3].copy_from_slice(&low_part);
-                                    
+
                                     (i32::from_le_bytes(joined) >> 8) as f64
-                                }).collect()
+                                })
+                                .collect()
                         }
                         SampleFormat::Int32 => {
-                            data
-                                .chunks_exact(4)
+                            data.chunks_exact(4)
                                 .map(|chunks| {
                                     // bit-shift based on using 16-bit wav at output
-                                    (i32::from_le_bytes(chunks.try_into().expect("Could not import as 32-bit")) >> 16) as f64
-                                }).collect()
+                                    (i32::from_le_bytes(
+                                        chunks.try_into().expect("Could not import as 32-bit"),
+                                    ) >> 16) as f64
+                                })
+                                .collect()
                         }
                         SampleFormat::Vox => {
                             let mut output: Vec<f64> = Vec::new();
                             let mut vox_state = vox::VoxState::new();
-                            data
-                                .iter()
+                            data.iter()
                                 // using for_each and...
                                 .for_each(|chunk| {
+                                    // start with highest 4 bits (by right-shifting); & 0xf only selects lowest 4
                                     for nibble in [(chunk >> 4) & 0xf, chunk & 0xf].iter() {
                                         // vox output is 12-bit, from i16::MIN <-> i16::MAX/2
                                         // but *don't* shift — changes spectrum, envelope!
@@ -91,7 +96,7 @@ fn main() {
                             output
                         }
                     };
-                    
+
                     // ---- FILTERING ----
                     // make filter
                     let mut filter = biquad::AudioFilter::new();
@@ -103,17 +108,17 @@ fn main() {
                         let filtered_samp = filter.process_sample(*sample * 0.4);
                         filtered_vec.push(filtered_samp as i16);
                     }
-                    
+
                     // ---- OUTPUT FILE ----
                     // write all files into output directory
                     let mut write_path = PathBuf::from(&args.output);
                     // create output dir if doesn't exist - create_dir returns Result<T,E>, so match it and print if err
                     let out_dir = create_dir(&args.output);
                     match out_dir {
-                        Ok(()) => {},
+                        Ok(()) => {}
                         Err(e) => {
                             eprintln!("{}", e)
-                        },
+                        }
                     };
                     // entry.path().file_name() returns an Option, so if let Some() handles/extracts value
                     if let Some(file_name) = entry.path().file_name() {
@@ -131,16 +136,16 @@ fn main() {
 struct Args {
     #[arg(short = 'i', long, default_value_t = String::from("input"))]
     input: String,
-    
+
     #[arg(short = 'o', long, default_value_t = String::from("output"))]
     output: String,
-    
+
     #[arg(short = 'm', long, default_value_t = 0)]
     min: u64,
-    
+
     #[clap(short = 'f', long, value_enum, default_value_t=SampleFormat::Int16)]
     format: SampleFormat,
-    
+
     #[arg(short = 'F', long, default_value_t = true)]
     filter: bool,
 }
@@ -170,11 +175,13 @@ fn write_file_as_wav(data: Vec<i16>, name: path::PathBuf) {
         bits_per_sample: 16,
         sample_format: hound::SampleFormat::Int,
     };
-    
+
     // writer
     let mut writer = hound::WavWriter::create(name, spec).expect("Could not create writer");
     for t in 0..data.len() {
-        writer.write_sample(data[t]).expect("Could not write sample");
+        writer
+            .write_sample(data[t])
+            .expect("Could not write sample");
     }
     writer.finalize().expect("Could not finalize WAV file");
 }
