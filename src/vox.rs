@@ -30,8 +30,8 @@ impl VoxState {
         if sign != 0 { predictor -= diff; } 
         else { predictor += diff; }
         
-        // clamp output between -(2^p), (2^p-1), p = 11
-        self.predictor = i16::clamp(predictor, -i16::pow(2, 11), i16::pow(2, 10));
+        // clamp output between 12-bit signed min/max value
+        self.predictor = i16::clamp(predictor, -i16::pow(2, 11), i16::pow(2, 11) - 1);
         // update for next time through; ss(n+1) into z-1 from block diagram
         self.step_index = step_index;
         // return updated predictor, which is also saved for next time; X(n) into z-1
