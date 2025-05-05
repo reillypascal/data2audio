@@ -21,8 +21,8 @@ impl VoxState {
         // sign is 4th bit; magnitude is 3 LSBs
         let sign = in_nibble & 8;
         let delta = in_nibble & 7;
-        // delta; after * 2 and >> 3, equivalent to ss(n)*B2)+(ss(n)/2*B1)+(ss(n)/4*BO) from pseudocode
-        // + 1; after >> 3, equivalent to ss(n)/8 from pseudocode — bit always set, regardless of 3 delta bits on/off
+        // delta; after * 2 and >> 3, equivalent to scale of 3 bits in (ss(n)*B2)+(ss(n)/2*B1)+(ss(n)/4*BO) from pseudocode
+        // + 1; after >> 3, corresponds to ss(n)/8 from pseudocode — bit always multiplies step, regardless of 3 delta bits on/off
         let diff = ((2 * delta + 1) as i16 * step_size) >> 3;
         // last time's value
         let mut predictor = self.predictor;
@@ -38,6 +38,7 @@ impl VoxState {
         self.predictor * 16
     }
 }
+// duplicate values from spec; can index w/ whole nibble, incl sign bit (4th)
 // increment up/down thru this table...
 const ADPCM_INDEX_TABLE: [i16; 16] = [
     -1, -1, -1, -1, 2, 4, 6, 8,

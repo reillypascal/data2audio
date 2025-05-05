@@ -87,8 +87,7 @@ fn main() {
                                 .for_each(|chunk| {
                                     // start with highest 4 bits (by right-shifting); & 0xf only selects lowest 4
                                     for nibble in [(chunk >> 4) & 0xf, chunk & 0xf].iter() {
-                                        // vox output is 12-bit, from i16::MIN <-> i16::MAX/2
-                                        // but *don't* shift — changes spectrum, envelope!
+                                        // vox output is 12-bit, from i16::MIN <-> i16::MAX/2 *don't* shift — seems to change spectrum, envelope
                                         output.push(vox_state.vox_decode(nibble) as f64);
                                     }
                                 });
