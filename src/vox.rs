@@ -21,6 +21,8 @@ impl VoxState {
         // sign is 4th bit; magnitude is 3 LSBs
         let sign = in_nibble & 8;
         let delta = in_nibble & 7;
+        // delta; after * 2 and >> 3, equivalent to ss(n)*B2)+(ss(n)/2*B1)+(ss(n)/4*BO) from pseudocode
+        // + 1; after >> 3, equivalent to ss(n)/8 from pseudocode — bit always set, regardless of 3 delta bits on/off
         let diff = ((2 * delta + 1) as i16 * step_size) >> 3;
         // last time's value
         let mut predictor = self.predictor;
