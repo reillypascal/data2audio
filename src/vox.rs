@@ -16,7 +16,7 @@ impl VoxState {
         // use in_nibble to index into adpcm step table; add to step
         let mut step_index = self.step_index + ADPCM_INDEX_TABLE[*in_nibble as usize];
         // clamp index to size of step table — for next time
-        step_index = i16::clamp(step_index, 0, 48);
+        step_index = i16::clamp(step_index, 0, (VOX_STEP_TABLE.len() - 1) as i16);
         
         // sign is 4th bit; magnitude is 3 LSBs
         let sign = in_nibble & 8;
@@ -24,7 +24,7 @@ impl VoxState {
         let diff = ((2 * delta + 1) as i16 * step_size) >> 3;
         // last time's value
         let mut predictor = self.predictor;
-        // equivalent to pseudocode's multiplying by -1
+        // if sign bit (4th one) is set, value is negative
         if sign != 0 { predictor -= diff; } 
         else { predictor += diff; }
         
@@ -32,7 +32,7 @@ impl VoxState {
         self.predictor = i16::clamp(predictor, -i16::pow(2, 11), i16::pow(2, 10));
         // update for next time through; ss(n+1) into z-1 from block diagram
         self.step_index = step_index;
-        // return updated predictor, which is also saved for next time; z-1
+        // return updated predictor, which is also saved for next time; X(n) into z-1
         self.predictor * 16
     }
 }
