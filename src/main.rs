@@ -85,7 +85,7 @@ fn main() {
                             data.iter()
                                 // using for_each and...
                                 .for_each(|chunk| {
-                                    // start with highest 4 bits (by right-shifting); & 0xf only selects lowest 4
+                                    // start with highest 4 bits (by right-shifting); & 0xf then selects lowest 4
                                     for nibble in [(chunk >> 4) & 0xf, chunk & 0xf].iter() {
                                         output.push(vox_state.vox_decode(nibble) as f64);
                                     }
