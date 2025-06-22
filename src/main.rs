@@ -101,10 +101,12 @@ fn main() {
                     filter.calculate_filter_coeffs();
                     // vec in which to process sound
                     let mut filtered_vec = Vec::<i16>::new();
+                    // let mut unfiltered_vec = Vec::<i16>::new();
                     // filter audio
                     for sample in &converted_data {
                         let filtered_samp = filter.process_sample(*sample * 0.4);
                         filtered_vec.push(filtered_samp as i16);
+                        // unfiltered_vec.push(*sample as i16);
                     }
 
                     // ---- OUTPUT FILE ----
@@ -123,6 +125,7 @@ fn main() {
                         write_path.push(file_name);
                         write_path.set_extension("wav");
                         write_file_as_wav(filtered_vec, write_path);
+                        // write_file_as_wav(unfiltered_vec, write_path);
                     }
                 }
             }

@@ -16,13 +16,13 @@ impl VoxState {
         // use in_nibble to index into adpcm step table; add to step
         let mut step_index = self.step_index + ADPCM_INDEX_TABLE[*in_nibble as usize];
         // clamp index to size of step table — for next time
-        step_index = i16::clamp(step_index, 0, (VOX_STEP_TABLE.len() as i16) - 1);
+        step_index = i16::clamp(step_index, 0, 48);
         
         // sign is 4th bit; magnitude is 3 LSBs
         let sign = in_nibble & 0b1000;
         let magnitude = in_nibble & 0b0111;
         // magnitude; after * 2 and >> 3, equivalent to scale of 3 bits in (ss(n)*B2)+(ss(n)/2*B1)+(ss(n)/4*BO) from pseudocode
-        // + 1; after >> 3, corresponds to ss(n)/8 from pseudocode — bit always multiplies step, regardless of 3 magnitude bits on/off
+        // + 1: after >> 3, corresponds to ss(n)/8 from pseudocode — bit always multiplies step, regardless of 3 magnitude bits on/off
         let mut delta = ((2 * (magnitude as i16) + 1) * step_size) >> 3;
         // last time's value
         let mut predictor = self.predictor;
