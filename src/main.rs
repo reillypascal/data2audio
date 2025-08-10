@@ -7,8 +7,11 @@ use std::path::{self, PathBuf};
 use clap::{Parser, ValueEnum};
 use walkdir::WalkDir;
 // modules
+pub mod batch;
 pub mod biquad;
+pub mod cli;
 pub mod vox;
+pub mod wav;
 
 fn main() {
     // ---- CLI ARGUMENTS ----
@@ -130,7 +133,7 @@ fn main() {
             }
         });
 }
-
+/*
 // ---- CLI PARSER ----
 #[derive(Parser, Debug)]
 struct Args {
@@ -158,7 +161,7 @@ enum SampleFormat {
     Int32,
     Vox,
 }
-
+*/
 // ---- WRITING WAVs ----
 fn create_dir(dir: &str) -> std::io::Result<()> {
     // create_dir_all - like multiple mkdir calls
