@@ -5,7 +5,6 @@ use std::fs;
 use std::path::{self, PathBuf};
 // crates
 use clap::{Parser, ValueEnum};
-use hound;
 use walkdir::WalkDir;
 // modules
 pub mod biquad;
@@ -117,7 +116,7 @@ fn main() {
                     match out_dir {
                         Ok(()) => {}
                         Err(e) => {
-                            eprintln!("{}", e)
+                            eprintln!("{e}")
                         }
                     };
                     // entry.path().file_name() returns an Option, so if let Some() handles/extracts value
@@ -163,7 +162,7 @@ enum SampleFormat {
 // ---- WRITING WAVs ----
 fn create_dir(dir: &str) -> std::io::Result<()> {
     // create_dir_all - like multiple mkdir calls
-    fs::create_dir_all(dir.to_string())?;
+    fs::create_dir_all(dir)?;
     Ok(())
 }
 
@@ -179,10 +178,8 @@ fn write_file_as_wav(data: Vec<i16>, name: path::PathBuf) {
 
     // writer
     let mut writer = hound::WavWriter::create(name, spec).expect("Could not create writer");
-    for t in 0..data.len() {
-        writer
-            .write_sample(data[t])
-            .expect("Could not write sample");
+    for sample in data {
+        writer.write_sample(sample).expect("Could not write sample");
     }
     writer.finalize().expect("Could not finalize WAV file");
 }
