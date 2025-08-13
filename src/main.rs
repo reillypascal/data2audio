@@ -6,6 +6,9 @@ use std::path::{self, PathBuf};
 // crates
 use clap::{Parser, ValueEnum};
 use walkdir::WalkDir;
+
+use crate::cli::{Args, SampleFormat};
+
 // modules
 pub mod batch;
 pub mod biquad;
