@@ -30,7 +30,9 @@ impl VoxState {
         // last time's value
         let mut predictor = self.predictor;
         // if sign bit (4th one) is set, value is negative
-        if sign != 0 { delta *= -1; }
+        if sign != 0 {
+            delta *= -1;
+        }
         predictor += delta;
 
         // clamp output between 12-bit signed min/max value
@@ -44,14 +46,10 @@ impl VoxState {
 }
 // duplicate values from spec; can index w/ whole nibble, incl sign bit (4th)
 // increment up/down thru this table...
-const ADPCM_INDEX_TABLE: [i16; 16] = [
-    -1, -1, -1, -1, 2, 4, 6, 8,
-    -1, -1, -1, -1, 2, 4, 6, 8,
-];
+const ADPCM_INDEX_TABLE: [i16; 16] = [-1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8];
 // ...use (clamped) index table to index this array for step size
 const VOX_STEP_TABLE: [i16; 49] = [
-    16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
-    50, 55, 60, 66, 73, 80, 88, 97, 107, 118, 130, 143,
-    157, 173, 190, 209, 230, 253, 279, 307, 337, 371, 408, 449,
-    494, 544, 598, 658, 724, 796, 876, 963, 1060, 1166, 1282, 1411, 1552,
+    16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45, 50, 55, 60, 66, 73, 80, 88, 97, 107, 118, 130,
+    143, 157, 173, 190, 209, 230, 253, 279, 307, 337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
+    876, 963, 1060, 1166, 1282, 1411, 1552,
 ];
