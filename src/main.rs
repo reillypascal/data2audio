@@ -19,7 +19,7 @@ pub mod vox;
 pub mod wav;
 
 fn main() {
-    // ---- CLI ARGUMENTS ----
+    // batch fn args
     let args = Args::parse();
 
     let filter_params = AudioFilterParameters::new(FilterAlgorithm::Hpf2, 20.0, 0.707, 0.0);
@@ -31,6 +31,7 @@ fn main() {
         sample_format: hound::SampleFormat::Int,
     };
 
+    // handles all processing
     process_batch(&args, &filter_params, &mut spec);
 
     // // ---- GET & PROCESS FILES ----
