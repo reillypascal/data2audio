@@ -3,6 +3,12 @@ pub struct VoxState {
     step_index: i16,
 }
 
+impl Default for VoxState {
+    fn default() -> Self {
+        VoxState::new()
+    }
+}
+
 impl VoxState {
     pub fn new() -> VoxState {
         VoxState {
