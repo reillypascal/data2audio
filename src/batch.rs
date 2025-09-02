@@ -20,6 +20,7 @@ pub fn process_batch(args: &Args, filter_params: &AudioFilterParameters, wav_spe
         });
 }
 
+// block processing to be placed in thread
 fn data_to_audio(
     entry: DirEntry,
     args: &Args,
@@ -103,15 +104,23 @@ fn data_to_audio(
             }
         };
 
+        // vec in which to filter sound OR just change sample format
+        let mut output_vec = Vec::<i16>::new();
+
         // ---- FILTERING ----
-        // make filter
-        let mut filter = AudioFilter::new(filter_params, args.samplerate);
-        filter.calculate_filter_coeffs();
-        // vec in which to process sound
-        let mut filtered_vec = Vec::<i16>::new();
-        // filter audio
-        for sample in &converted_data {
-            filtered_vec.push(filter.process_sample(*sample * 0.4) as i16);
+        // only filter if filter arg is set true
+        if args.filter {
+            // make filter
+            let mut filter = AudioFilter::new(filter_params, args.samplerate);
+            filter.calculate_filter_coeffs();
+            // filter audio
+            for sample in &converted_data {
+                output_vec.push(filter.process_sample(*sample * 0.4) as i16);
+            }
+        } else {
+            for sample in &converted_data {
+                output_vec.push(*sample as i16);
+            }
         }
 
         // ---- OUTPUT FILE ----
@@ -129,13 +138,12 @@ fn data_to_audio(
         if let Some(file_name) = entry.path().file_name() {
             write_path.push(file_name);
             write_path.set_extension("wav");
-            match write_file_as_wav(&filtered_vec, &write_path, wav_spec) {
+            match write_file_as_wav(&output_vec, &write_path, wav_spec) {
                 Ok(()) => {}
                 Err(e) => {
                     eprintln!("{e}")
                 }
             };
-            // write_file_as_wav(unfiltered_vec, write_path);
         }
     }
 }
