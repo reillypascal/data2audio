@@ -115,8 +115,9 @@ fn data_to_audio(
             filter.calculate_filter_coeffs();
             // filter audio
             for sample in &converted_data {
+                // dB are 10^(dB/20) (not divided by 10) bc root power ratio
                 output_vec.push(
-                    filter.process_sample(*sample * f64::powf(10.0, args.gain / 10.0)) as i16,
+                    filter.process_sample(*sample * f64::powf(10.0, args.gain / 20.0)) as i16,
                 );
             }
         } else {
