@@ -104,27 +104,23 @@ fn data_to_audio(
             }
         };
 
-        // vec in which to filter sound OR just change sample format
-        let mut output_vec = Vec::<i16>::new();
-
         // ---- FILTERING ----
         // only filter if filter arg is set true
-        if args.filter {
-            // make filter
-            let mut filter = AudioFilter::new(filter_params, args.samplerate);
-            filter.calculate_filter_coeffs();
-            // filter audio
-            for sample in &converted_data {
-                // dB are 10^(dB/20) (not divided by 10) bc root power ratio
-                output_vec.push(
-                    filter.process_sample(*sample * f64::powf(10.0, args.gain / 20.0)) as i16,
-                );
+        let output_vec: Vec<i16> = match args.filter {
+            true => {
+                // make filter
+                let mut filter = AudioFilter::new(filter_params, args.samplerate);
+                filter.calculate_filter_coeffs();
+                // filter audio
+                converted_data
+                    .iter()
+                    .map(|sample| {
+                        filter.process_sample(*sample * f64::powf(10.0, args.gain / 20.0)) as i16
+                    })
+                    .collect()
             }
-        } else {
-            for sample in &converted_data {
-                output_vec.push(*sample as i16);
-            }
-        }
+            false => converted_data.iter().map(|sample| *sample as i16).collect(),
+        };
 
         // ---- OUTPUT FILE ----
         // write all files into output directory
