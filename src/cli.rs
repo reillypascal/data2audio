@@ -13,6 +13,9 @@ pub struct Args {
     #[arg(short = 'm', long, default_value_t = 0)]
     pub min: u64,
 
+    #[arg(short = 's', long, default_value_t = 44100)]
+    pub samplerate: u32,
+
     #[clap(short = 'f', long, value_enum, default_value_t=SampleFormat::Int16)]
     pub format: SampleFormat,
 

@@ -20,12 +20,17 @@ pub struct AudioFilterParameters {
 }
 
 impl AudioFilterParameters {
-    pub fn new() -> AudioFilterParameters {
+    pub fn new(
+        algorithm: FilterAlgorithm,
+        fc: f64,
+        q: f64,
+        boost_cut_db: f64,
+    ) -> AudioFilterParameters {
         AudioFilterParameters {
-            algorithm: FilterAlgorithm::Hpf2,
-            fc: 35.0,
-            q: 0.71,
-            boost_cut_db: 0.0,
+            algorithm,
+            fc,
+            q,
+            boost_cut_db,
         }
     }
 }
@@ -33,6 +38,14 @@ impl AudioFilterParameters {
 pub struct Biquad {
     coeff_array: Vec<f64>,
     state_array: Vec<f64>,
+}
+
+// see https://rust-lang.github.io/rust-clippy/master/index.html#new_without_default
+// The user might expect to be able to use Default as the type can be constructed without arguments.
+impl Default for Biquad {
+    fn default() -> Self {
+        Biquad::new()
+    }
 }
 
 impl Biquad {
@@ -65,15 +78,15 @@ impl Biquad {
 pub struct AudioFilter {
     parameters: AudioFilterParameters,
     biquad: Biquad,
-    sample_rate: f64,
+    sample_rate: u32,
 }
 
 impl AudioFilter {
-    pub fn new() -> AudioFilter {
+    pub fn new(params: &AudioFilterParameters, sample_rate: u32) -> AudioFilter {
         AudioFilter {
-            parameters: AudioFilterParameters::new(),
+            parameters: *params,
             biquad: Biquad::new(),
-            sample_rate: 44100.0,
+            sample_rate,
         }
     }
 
@@ -98,7 +111,7 @@ impl AudioFilter {
             + self.biquad.coeff_array[5] * self.biquad.process_sample(xn)
     }
 
-    pub fn set_sample_rate(&mut self, sample_rate: f64) {
+    pub fn set_sample_rate(&mut self, sample_rate: u32) {
         self.sample_rate = sample_rate;
     }
 
@@ -114,7 +127,7 @@ impl AudioFilter {
         let q = self.parameters.q;
 
         if filter_algorithm == FilterAlgorithm::Hpf2 {
-            let theta_c = (2.0 * PI * fc) / self.sample_rate;
+            let theta_c = (2.0 * PI * fc) / self.sample_rate as f64;
             let d = 1.0 / q;
 
             let beta_numerator = 1.0 - (d / 2.0) * f64::sin(theta_c);

@@ -1,16 +1,17 @@
-use std::ffi::OsStr;
+// use std::ffi::OsStr;
 use std::fs;
-use std::io;
+// use std::io;
 use std::path::PathBuf;
 
 use hound::WavSpec;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::WalkDir;
 
+use crate::biquad::{AudioFilter, AudioFilterParameters};
 use crate::cli::{Args, SampleFormat};
 use crate::vox;
 use crate::wav::write_file_as_wav;
 
-pub fn process_batch(args: &Args, wav_spec: &mut WavSpec) {
+pub fn process_batch(args: &Args, filter_params: &AudioFilterParameters, wav_spec: &mut WavSpec) {
     WalkDir::new(&args.input)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -91,7 +92,44 @@ pub fn process_batch(args: &Args, wav_spec: &mut WavSpec) {
                             output
                         }
                     };
+
+                    // ---- FILTERING ----
+                    // make filter
+                    let mut filter = AudioFilter::new(filter_params, args.samplerate);
+                    filter.calculate_filter_coeffs();
+                    // vec in which to process sound
+                    let mut filtered_vec = Vec::<i16>::new();
+                    // filter audio
+                    for sample in &converted_data {
+                        filtered_vec.push(filter.process_sample(*sample * 0.4) as i16);
+                    }
+
+                    // ---- OUTPUT FILE ----
+                    // write all files into output directory
+                    let mut write_path = PathBuf::from(&args.output);
+                    // create output dir if doesn't exist - create_dir returns Result<T,E>, so match it and print if err
+                    let out_dir = create_dir(&args.output);
+                    match out_dir {
+                        Ok(()) => {}
+                        Err(e) => {
+                            eprintln!("{e}")
+                        }
+                    };
+                    // entry.path().file_name() returns an Option, so if let Some() handles/extracts value
+                    if let Some(file_name) = entry.path().file_name() {
+                        write_path.push(file_name);
+                        write_path.set_extension("wav");
+                        write_file_as_wav(&filtered_vec, &write_path, &wav_spec);
+                        // write_file_as_wav(unfiltered_vec, write_path);
+                    }
                 }
             }
         });
+}
+
+// ---- WRITING WAVs ----
+fn create_dir(dir: &str) -> std::io::Result<()> {
+    // create_dir_all - like multiple mkdir calls
+    fs::create_dir_all(dir)?;
+    Ok(())
 }
