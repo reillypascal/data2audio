@@ -21,6 +21,9 @@ pub struct Args {
 
     #[arg(short = 'F', long, default_value_t = true)]
     pub filter: bool,
+
+    #[arg(short = 'g', long, default_value_t = -8.0)]
+    pub gain: f64,
 }
 
 #[derive(ValueEnum, Clone, Debug)]

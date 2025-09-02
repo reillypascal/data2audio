@@ -115,7 +115,9 @@ fn data_to_audio(
             filter.calculate_filter_coeffs();
             // filter audio
             for sample in &converted_data {
-                output_vec.push(filter.process_sample(*sample * 0.4) as i16);
+                output_vec.push(
+                    filter.process_sample(*sample * f64::powf(10.0, args.gain / 10.0)) as i16,
+                );
             }
         } else {
             for sample in &converted_data {
