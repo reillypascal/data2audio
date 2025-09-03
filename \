@@ -12,7 +12,7 @@ use crate::wav::write_file_as_wav;
 pub fn process_batch(args: &Args) {
     WalkDir::new(&args.input)
         .into_iter()
-        .par_bridge() // .par_bridge() is less effective than .into_par_iter(),
+        // .par_bridge() // .par_bridge() is less effective than .into_par_iter(),
         // but hard to parallelize file I/O with regular par iter
         .filter_map(|entry| entry.ok())
         .for_each(|entry| {

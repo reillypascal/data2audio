@@ -2,7 +2,6 @@
 use clap::Parser;
 
 use crate::batch::process_batch;
-use crate::biquad::{AudioFilterParameters, FilterAlgorithm};
 use crate::cli::Args;
 
 // modules
@@ -16,17 +15,8 @@ fn main() {
     // batch fn args
     let args = Args::parse();
 
-    let filter_params = AudioFilterParameters::new(FilterAlgorithm::Hpf2, 20.0, 0.707, 0.0);
-
-    let mut spec = hound::WavSpec {
-        channels: 1,
-        sample_rate: 44100,
-        bits_per_sample: 16,
-        sample_format: hound::SampleFormat::Int,
-    };
-
     // handles all processing
-    process_batch(&args, &filter_params, &mut spec);
+    process_batch(&args);
 
     // // ---- GET & PROCESS FILES ----
     // // WalkDir "walks" recursively through a directory and all its subfolders
