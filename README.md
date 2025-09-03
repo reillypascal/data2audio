@@ -6,7 +6,10 @@ Filters out sub-audible frequencies and normalizes amplitudes before writing to 
 
 ## Usage
 
-This project uses Rust's [cargo](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html) package manager. After [installing Rust](https://doc.rust-lang.org/book/ch01-01-installation.html#installation), you can run the command `cargo run` from the code folder.
+This project uses Rust's [cargo](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html) package manager. After [installing Rust](https://doc.rust-lang.org/book/ch01-01-installation.html#installation), you can:
+
+- Run the command `cargo run` from the code folder to run without installing.
+- Run the command `cargo install --path <path-to-code-folder>` to build and install on your computer.
 
 The code will default to expecting your input file(s) and/or folder(s) to be in the `input` subfolder, and will write .WAV files to the `output` sub-folder. Here are the commands to change the default options:
 
@@ -22,16 +25,25 @@ The code will default to expecting your input file(s) and/or folder(s) to be in 
 
 ### Usage Examples
 
-- Note the extra two dashes (`--`) between `cargo run` and the command-line options. This sends your options to the running program, rather than to cargo.
+- Note the extra two dashes (`--`) between `cargo run` and the command-line options. This sends your options to the running program, rather than to cargo. If you install using `cargo install`, these are not necessary.
 
 - Only accept files 1MB or larger; read as unsigned 8-bit integer values
 
 ```sh
+# run with cargo
 cargo run -- -m 1000000 -f 'uint8'
+
+# run after installing
+data2audio -m 1000000 -f 'uint8'
+
 ```
 
-- Read files from the `data` subfolder and output them to the code folder, rather than a subfolder
+- Read files from the `data` subfolder and output them to the working folder, rather than a subfolder
 
 ```sh
+# run with cargo
 cargo run -- -i "data" -o "."
+
+# run after installing
+data2audio -i "data" -o "."
 ```
