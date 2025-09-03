@@ -1,5 +1,4 @@
 use clap::{Parser, ValueEnum};
-//use hound::SampleFormat;
 
 // ---- CLI PARSER ----
 #[derive(Parser, Debug)]

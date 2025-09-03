@@ -1,11 +1,5 @@
-// use std::path::{self, Path, PathBuf, StripPrefixError};
-// use walkdir::{DirEntry, WalkDir};
-// std
-// use std::fs;
-// use std::path::{self, PathBuf};
 // crates
 use clap::Parser;
-// use walkdir::WalkDir;
 
 use crate::batch::process_batch;
 use crate::biquad::{AudioFilterParameters, FilterAlgorithm};
