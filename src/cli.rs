@@ -1,4 +1,6 @@
 use clap::{Parser, ValueEnum};
+// use std::collections::HashMap;
+// use std::sync::LazyLock;
 
 // ---- CLI PARSER ----
 #[derive(Parser, Debug)]
@@ -25,7 +27,7 @@ pub struct Args {
     pub gain: f64,
 }
 
-#[derive(ValueEnum, Clone, Debug)]
+#[derive(ValueEnum, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum SampleFormat {
     Uint8,
     Int16,
@@ -33,3 +35,13 @@ pub enum SampleFormat {
     Int32,
     Vox,
 }
+
+// pub const FMT_NUM_BITS: LazyLock<HashMap<SampleFormat, u16>> = LazyLock::new(|| {
+//     HashMap::from([
+//         (SampleFormat::Uint8, 8),
+//         (SampleFormat::Int16, 16),
+//         (SampleFormat::Int24, 24),
+//         (SampleFormat::Int32, 32),
+//         (SampleFormat::Vox, 8),
+//     ])
+// });
