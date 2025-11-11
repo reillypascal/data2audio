@@ -78,7 +78,7 @@ pub fn process_batch(args: &Args) {
                                 })
                                 .collect();
 
-                            if args.filter {
+                            if !args.raw {
                                 for sample in &mut formatted_data {
                                     *sample =
                                         (filter.process_sample((*sample as f64) * gain_lin)) as i16;
@@ -120,7 +120,7 @@ pub fn process_batch(args: &Args) {
                                 })
                                 .collect();
 
-                            if args.filter {
+                            if !args.raw {
                                 for sample in &mut formatted_data {
                                     *sample =
                                         (filter.process_sample((*sample as f64) * gain_lin)) as i32;

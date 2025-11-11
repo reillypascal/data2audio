@@ -20,8 +20,8 @@ pub struct Args {
     #[clap(short = 'f', long, value_enum, default_value_t=SampleFormat::Int16)]
     pub format: SampleFormat,
 
-    #[arg(short = 'F', long, default_value_t = true)]
-    pub filter: bool,
+    #[arg(short = 'r', long, default_value_t = false)]
+    pub raw: bool,
 
     #[arg(short = 'g', long, default_value_t = -8.0)]
     pub gain: f64,
