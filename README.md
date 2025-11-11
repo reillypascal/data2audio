@@ -18,7 +18,7 @@ The code will default to expecting your input file(s) and/or folder(s) to be in 
 - `-o, --output` subfolder in which to write .WAV files (string; default "output")
 - `-m, --min` minimum file size to convert (in bytes) — small files (< 1MB) are often less useful (int; default 0)
 - `-s, --samplerate` sample rate at which to convert the incoming files to .WAV (int; default 44100)
-- `-f, --format` sample format in which to read the files (string: options are 'uint8', 'int16', 'int24', 'int32', and 'vox'; default 'int16')
+- `-f, --format` sample format in which to read the files (string: options are 'int8', 'int16', 'int24', 'int32', and 'vox'; default 'int16')
 - `-r, --raw` whether to bypass a 20 Hz low-cut filter which removes sub-audible frequencies (bool; default false)
 - `-g, --gain` gain in decibels to apply before filtering (float; default -8.0)
   - When cutting out sub-audible frequencies, the peak-to-peak amplitude often increases. This setting is to compensate for that and avoid clipping. Unused if `--raw` is set to true.
