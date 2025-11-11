@@ -3,8 +3,9 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use hound::{self, Sample, WavReader, WavSpec, WavWriter};
+// use i24::I24;
 
-use crate::cli::Args;
+use crate::cli::{Args, SampleFormat};
 
 pub fn read_file_as_wav<T>(path: &Path) -> Result<(Vec<T>, WavSpec), hound::Error>
 where
@@ -24,17 +25,25 @@ pub fn write_file_as_wav<T>(data: &[T], path: &PathBuf, args: &Args) -> Result<(
 where
     T: Copy + Sample + 'static, // &TypeId::of<T>() requires 'static
 {
-    let fmt_num_bits = HashMap::<TypeId, u16>::from([
-        (TypeId::of::<i8>(), 8),
-        (TypeId::of::<i16>(), 16),
-        // (TypeId::of::<i24>(), 24),
-        (TypeId::of::<i32>(), 32),
+    let fmt_num_bits = HashMap::<SampleFormat, u16>::from([
+        (SampleFormat::Int8, 8),
+        (SampleFormat::Int16, 16),
+        (SampleFormat::Int24, 24),
+        (SampleFormat::Int32, 32),
+        (SampleFormat::Vox, 16),
     ]);
+
+    // use this to calculate bit shift amount for different in/out formats
+    // let type_num_bits = HashMap::<TypeId, u16>::from([
+    //     (TypeId::of::<i8>(), 8),
+    //     (TypeId::of::<i16>(), 16),
+    //     (TypeId::of::<i32>(), 32),
+    // ]);
 
     let spec = hound::WavSpec {
         channels: 1,
         sample_rate: args.samplerate,
-        bits_per_sample: fmt_num_bits[&TypeId::of::<T>()],
+        bits_per_sample: fmt_num_bits[&args.format],
         sample_format: hound::SampleFormat::Int,
     };
 

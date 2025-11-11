@@ -105,21 +105,36 @@ pub fn process_batch(args: &Args) {
                             };
                         }
                         SampleFormat::Int24 => {
-                            // data.chunks_exact(3)
-                            //     .map(|chunks| {
-                            //         // get values from chunks_exact(3), put in array
-                            //         let low_part: [u8; 3] =
-                            //             chunks.try_into().expect("Could not import as 24-bit");
-                            //         // no i24, so we add this 0x00 to fill out hi byte in i32
-                            //         let high_part: [u8; 1] = [0x00];
-                            //         // copy to "joined" from low/hi parts as slices
-                            //         let mut joined: [u8; 4] = [0; 4];
-                            //         joined[3..].copy_from_slice(&high_part);
-                            //         joined[..3].copy_from_slice(&low_part);
-                            //
-                            //         (i32::from_le_bytes(joined) >> 8) as f64
-                            //     })
-                            //     .collect()
+                            let mut formatted_data: Vec<i32> = data
+                                .chunks_exact(3)
+                                .map(|chunks| {
+                                    // get values from chunks_exact(3), put in array
+                                    let low_part: [u8; 3] =
+                                        chunks.try_into().expect("Could not import as 24-bit");
+                                    // no i24, so we add this 0x00 to fill out hi byte in i32
+                                    let high_part: [u8; 1] = [0x00];
+                                    // copy to "joined" from low/hi parts as slices
+                                    let mut joined: [u8; 4] = [0; 4];
+                                    joined[3..].copy_from_slice(&high_part);
+                                    joined[..3].copy_from_slice(&low_part);
+
+                                    i32::from_le_bytes(joined)
+                                })
+                                .collect();
+
+                            if !args.raw {
+                                for sample in &mut formatted_data {
+                                    *sample =
+                                        (filter.process_sample((*sample as f64) * gain_lin)) as i32;
+                                }
+                            }
+
+                            match write_file_as_wav(&formatted_data, &write_path, args) {
+                                Ok(()) => {}
+                                Err(e) => {
+                                    eprintln!("{e}")
+                                }
+                            };
                         }
                         SampleFormat::Int32 => {
                             let mut formatted_data: Vec<i32> = data
