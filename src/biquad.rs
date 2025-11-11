@@ -1,5 +1,7 @@
 use std::f64::consts::PI;
 
+use crate::cli::Args;
+
 #[derive(Copy, Clone, PartialEq)]
 pub enum FilterAlgorithm {
     Lpf1P,
@@ -110,6 +112,25 @@ impl AudioFilter {
         self.biquad.coeff_array[6] * xn
             + self.biquad.coeff_array[5] * self.biquad.process_sample(xn)
     }
+
+    // pub fn process_vec<T>(&mut self, data: &mut Vec<T>, args: &Args)
+    // // -> Vec<T>
+    // where
+    //     T: Copy + From<f64> + Into<f64>,
+    //     // f64: std::convert::From<T>,
+    //     // T: FromPrimitive,
+    // {
+    //     // make filter
+    //     let filter_params = AudioFilterParameters::new(FilterAlgorithm::Hpf2, 20.0, 0.707, 0.0);
+    //     let mut filter = AudioFilter::new(&filter_params, args.samplerate);
+    //     filter.calculate_filter_coeffs();
+    //     let gain_lin = f64::powf(10.0, args.gain / 20.0);
+    //
+    //     // filter audio
+    //     for sample in data {
+    //         *sample = (filter.process_sample((*sample as f64) * gain_lin)) as T;
+    //     }
+    // }
 
     pub fn set_sample_rate(&mut self, sample_rate: u32) {
         self.sample_rate = sample_rate;

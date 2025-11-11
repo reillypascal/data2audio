@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use rayon::prelude::*;
 use walkdir::WalkDir;
 
-// use crate::biquad::{AudioFilter, AudioFilterParameters, FilterAlgorithm};
+use crate::biquad::{AudioFilter, AudioFilterParameters, FilterAlgorithm};
 use crate::cli::{Args, SampleFormat};
 use crate::vox;
 use crate::wav::write_file_as_wav;
@@ -47,6 +47,13 @@ pub fn process_batch(args: &Args) {
                         }
                     };
 
+                    // make filter
+                    let filter_params =
+                        AudioFilterParameters::new(FilterAlgorithm::Hpf2, 20.0, 0.707, 0.0);
+                    let mut filter = AudioFilter::new(&filter_params, args.samplerate);
+                    filter.calculate_filter_coeffs();
+                    let gain_lin = f64::powf(10.0, args.gain / 20.0);
+
                     // ---- CONVERT BASED ON SAMPLE FORMAT ----
                     // need to filter as f64 anyway, so best to do in
                     // match arms here for consistency
@@ -61,7 +68,7 @@ pub fn process_batch(args: &Args) {
                             //         .collect()
                         }
                         SampleFormat::Int16 => {
-                            let formatted_data: Vec<i16> = data
+                            let mut formatted_data: Vec<i16> = data
                                 .chunks_exact(2)
                                 .map(|chunks| {
                                     // from_le_bytes() takes array of bytes and converts to a single little-endian integer
@@ -71,7 +78,14 @@ pub fn process_batch(args: &Args) {
                                 })
                                 .collect();
 
-                            match write_file_as_wav(&formatted_data, &write_path, &args) {
+                            if args.filter {
+                                for sample in &mut formatted_data {
+                                    *sample =
+                                        (filter.process_sample((*sample as f64) * gain_lin)) as i16;
+                                }
+                            }
+
+                            match write_file_as_wav(&formatted_data, &write_path, args) {
                                 Ok(()) => {}
                                 Err(e) => {
                                     eprintln!("{e}")
@@ -96,7 +110,7 @@ pub fn process_batch(args: &Args) {
                             //     .collect()
                         }
                         SampleFormat::Int32 => {
-                            let formatted_data: Vec<i32> = data
+                            let mut formatted_data: Vec<i32> = data
                                 .chunks_exact(4)
                                 .map(|chunks| {
                                     // bit-shift based on using 16-bit wav at output
@@ -106,7 +120,14 @@ pub fn process_batch(args: &Args) {
                                 })
                                 .collect();
 
-                            match write_file_as_wav(&formatted_data, &write_path, &args) {
+                            if args.filter {
+                                for sample in &mut formatted_data {
+                                    *sample =
+                                        (filter.process_sample((*sample as f64) * gain_lin)) as i32;
+                                }
+                            }
+
+                            match write_file_as_wav(&formatted_data, &write_path, args) {
                                 Ok(()) => {}
                                 Err(e) => {
                                     eprintln!("{e}")
@@ -125,7 +146,7 @@ pub fn process_batch(args: &Args) {
                                     }
                                 });
 
-                            match write_file_as_wav(&formatted_data, &write_path, &args) {
+                            match write_file_as_wav(&formatted_data, &write_path, args) {
                                 Ok(()) => {}
                                 Err(e) => {
                                     eprintln!("{e}")
