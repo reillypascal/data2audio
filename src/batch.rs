@@ -58,14 +58,26 @@ pub fn process_batch(args: &Args) {
                     // need to filter as f64 anyway, so best to do in
                     // match arms here for consistency
                     match args.format {
-                        SampleFormat::Uint8 => {
-                            //     data.iter()
-                            //         .map(|chunk| {
-                            //             // bit-shift based on using 16-bit wav at output
-                            //             // need to do as 16-bit to avoid overflow in shift
-                            //             ((*chunk as u16) << 8) as f64
-                            //         })
-                            //         .collect()
+                        SampleFormat::Int8 => {
+                            let mut formatted_data: Vec<i8> = data
+                                .iter()
+                                // needs to be i8 to satisfy Sample trait bound
+                                .map(|chunk| ((*chunk as i16) - 128) as i8)
+                                .collect();
+
+                            if !args.raw {
+                                for sample in &mut formatted_data {
+                                    *sample =
+                                        (filter.process_sample((*sample as f64) * gain_lin)) as i8;
+                                }
+                            }
+
+                            match write_file_as_wav(&formatted_data, &write_path, args) {
+                                Ok(()) => {}
+                                Err(e) => {
+                                    eprintln!("{e}")
+                                }
+                            };
                         }
                         SampleFormat::Int16 => {
                             let mut formatted_data: Vec<i16> = data

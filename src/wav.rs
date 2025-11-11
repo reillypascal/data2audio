@@ -25,7 +25,7 @@ where
     T: Copy + Sample + 'static, // &TypeId::of<T>() requires 'static
 {
     let fmt_num_bits = HashMap::<TypeId, u16>::from([
-        (TypeId::of::<u8>(), 8),
+        (TypeId::of::<i8>(), 8),
         (TypeId::of::<i16>(), 16),
         // (TypeId::of::<i24>(), 24),
         (TypeId::of::<i32>(), 32),

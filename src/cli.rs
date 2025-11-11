@@ -29,7 +29,7 @@ pub struct Args {
 
 #[derive(ValueEnum, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum SampleFormat {
-    Uint8,
+    Int8,
     Int16,
     Int24,
     Int32,
