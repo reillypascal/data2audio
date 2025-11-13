@@ -20,6 +20,9 @@ pub struct Args {
     #[clap(short = 'f', long, value_enum, default_value_t=SampleFormat::Int16)]
     pub format: SampleFormat,
 
+    #[clap(short = 'F', long, value_enum)]
+    pub out_format: Option<SampleFormat>,
+
     #[arg(short = 'r', long, default_value_t = false)]
     pub raw: bool,
 
@@ -27,7 +30,7 @@ pub struct Args {
     pub gain: f64,
 }
 
-#[derive(ValueEnum, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(ValueEnum, Clone, Debug, Copy, PartialEq, Eq, Hash)]
 pub enum SampleFormat {
     Int8,
     Int16,
