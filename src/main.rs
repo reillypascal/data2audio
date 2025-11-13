@@ -1,13 +1,13 @@
 // crates
 use clap::Parser;
 
-use crate::batch::process_batch;
 use crate::cli::Args;
+use crate::convert::process_batch;
 
 // modules
-pub mod batch;
 pub mod biquad;
 pub mod cli;
+pub mod convert;
 pub mod vox;
 pub mod wav;
 

@@ -1,6 +1,6 @@
 // use std::any::TypeId;
+// use std::ops::{ShlAssign, ShrAssign};
 use std::collections::HashMap;
-use std::ops::{ShlAssign, ShrAssign};
 use std::path::{Path, PathBuf};
 
 use hound::{self, Sample, WavReader, WavSpec, WavWriter};
@@ -24,7 +24,7 @@ where
 // &[i16] instead of &Vec<i16> - https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
 pub fn write_file_as_wav<T>(data: &[T], path: &PathBuf, args: &Args) -> Result<(), hound::Error>
 where
-    T: Copy + Sample + ShlAssign + ShlAssign<i32> + ShrAssign + ShrAssign<i32> + 'static, // &TypeId::of<T>() requires 'static
+    T: Copy + Sample + 'static, //+ ShlAssign + ShlAssign<i32> + ShrAssign + ShrAssign<i32>  // &TypeId::of<T>() requires 'static
 {
     let fmt_num_bits = HashMap::<SampleFormat, u16>::from([
         (SampleFormat::Int8, 8),
