@@ -80,12 +80,12 @@ pub fn process_batch(args: &Args) {
                         SampleFormat::Int16 => {
                             let mut formatted_data: Vec<i16> = data
                                 .chunks_exact(2)
-                                .map(|chunks| {
+                                .map(|chunk| {
                                     match &args.endian {
                                         Endianness::Big => {
                                             // from_le_bytes() takes array of bytes and converts to a single little-endian integer
                                             i16::from_be_bytes(
-                                                chunks
+                                                chunk
                                                     .try_into()
                                                     .expect("Could not import as 16-bit"),
                                             )
@@ -93,7 +93,7 @@ pub fn process_batch(args: &Args) {
                                         Endianness::Little => {
                                             // from_le_bytes() takes array of bytes and converts to a single little-endian integer
                                             i16::from_le_bytes(
-                                                chunks
+                                                chunk
                                                     .try_into()
                                                     .expect("Could not import as 16-bit"),
                                             )
@@ -119,18 +119,29 @@ pub fn process_batch(args: &Args) {
                         SampleFormat::Int24 => {
                             let mut formatted_data: Vec<i32> = data
                                 .chunks_exact(3)
-                                .map(|chunks| {
+                                .map(|chunk| {
                                     // get values from chunks_exact(3), put in array
-                                    let low_part: [u8; 3] =
-                                        chunks.try_into().expect("Could not import as 24-bit");
+                                    let data_bytes: [u8; 3] =
+                                        chunk.try_into().expect("Could not import as 24-bit");
                                     // no i24, so we add this 0x00 to fill out hi byte in i32
-                                    let high_part: [u8; 1] = [0x00];
+                                    let padding_byte: [u8; 1] = [0x00];
                                     // copy to "joined" from low/hi parts as slices
                                     let mut joined: [u8; 4] = [0; 4];
-                                    joined[3..].copy_from_slice(&high_part);
-                                    joined[..3].copy_from_slice(&low_part);
 
-                                    i32::from_le_bytes(joined)
+                                    match &args.endian {
+                                        Endianness::Big => {
+                                            joined[..1].copy_from_slice(&padding_byte);
+                                            joined[1..].copy_from_slice(&data_bytes);
+
+                                            i32::from_be_bytes(joined)
+                                        }
+                                        Endianness::Little => {
+                                            joined[3..].copy_from_slice(&padding_byte);
+                                            joined[..3].copy_from_slice(&data_bytes);
+
+                                            i32::from_le_bytes(joined)
+                                        }
+                                    }
                                 })
                                 .collect();
 
@@ -151,12 +162,12 @@ pub fn process_batch(args: &Args) {
                         SampleFormat::Int32 => {
                             let mut formatted_data: Vec<i32> = data
                                 .chunks_exact(4)
-                                .map(|chunks| {
+                                .map(|chunk| {
                                     match &args.endian {
                                         Endianness::Big => {
                                             // bit-shift based on using 16-bit wav at output
                                             i32::from_le_bytes(
-                                                chunks
+                                                chunk
                                                     .try_into()
                                                     .expect("Could not import as 32-bit"),
                                             )
@@ -164,7 +175,7 @@ pub fn process_batch(args: &Args) {
                                         Endianness::Little => {
                                             // bit-shift based on using 16-bit wav at output
                                             i32::from_le_bytes(
-                                                chunks
+                                                chunk
                                                     .try_into()
                                                     .expect("Could not import as 32-bit"),
                                             )
@@ -193,11 +204,19 @@ pub fn process_batch(args: &Args) {
                             data.iter()
                                 // using for_each and...
                                 .for_each(|chunk| {
-                                    // start with highest 4 bits (by right-shifting); & 0b1111 selects lowest 4
+                                    // start with highest 4 bits by right-shifting
+                                    // & 0b1111 selects lowest 4
                                     for nibble in [chunk >> 4, chunk & 0b1111].iter() {
                                         formatted_data.push(vox_state.vox_decode(nibble));
                                     }
                                 });
+
+                            if !args.raw {
+                                for sample in &mut formatted_data {
+                                    *sample =
+                                        (filter.process_sample((*sample as f64) * gain_lin)) as i16;
+                                }
+                            }
 
                             match write_file_as_wav(&formatted_data, &write_path, args) {
                                 Ok(()) => {}

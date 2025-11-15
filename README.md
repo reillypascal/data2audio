@@ -20,6 +20,7 @@ The code will default to expecting your input file(s) and/or folder(s) to be in 
 - `-s`, `--samplerate` sample rate at which to convert the incoming files to .WAV (int; default 44100)
 - `-f`, `--format` sample format in which to read the files (string: options are 'int8', 'int16', 'int24', 'int32', and 'vox'; default 'int16')
 - `-e`, `--endian` whether to read source bytes as little- or big-endian (string: options are 'little' and 'big'; default 'little')
+  - NOTE: this does not affect 'int8' or 'vox' formats, as the source data for these is only 1 byte
 - `-r`, `--raw` whether to bypass a 20 Hz low-cut filter which removes sub-audible frequencies (bool; default false)
 - `-g`, `--gain` gain in decibels to apply before filtering (float; default -8.0)
   - When cutting out sub-audible frequencies, the peak-to-peak amplitude often increases. This setting is to compensate for that and avoid clipping. Unused if `--raw` is set to true.
