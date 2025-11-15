@@ -20,9 +20,10 @@ pub struct Args {
     #[clap(short = 'f', long, value_enum, default_value_t=SampleFormat::Int16)]
     pub format: SampleFormat,
 
-    #[clap(short = 'F', long, value_enum)]
-    pub out_format: Option<SampleFormat>,
-
+    #[clap(short = 'e', long, value_enum, default_value_t=Endianness::Little)]
+    pub endian: Endianness,
+    // #[clap(short = 'F', long, value_enum)]
+    // pub out_format: Option<SampleFormat>,
     #[arg(short = 'r', long, default_value_t = false)]
     pub raw: bool,
 
@@ -39,6 +40,11 @@ pub enum SampleFormat {
     Vox,
 }
 
+#[derive(ValueEnum, Clone, Debug)]
+pub enum Endianness {
+    Little,
+    Big,
+}
 // pub const FMT_NUM_BITS: LazyLock<HashMap<SampleFormat, u16>> = LazyLock::new(|| {
 //     HashMap::from([
 //         (SampleFormat::Uint8, 8),

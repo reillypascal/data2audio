@@ -5,7 +5,7 @@ use rayon::prelude::*;
 use walkdir::WalkDir;
 
 use crate::biquad::{AudioFilter, AudioFilterParameters, FilterAlgorithm};
-use crate::cli::{Args, SampleFormat};
+use crate::cli::{Args, Endianness, SampleFormat};
 use crate::vox;
 use crate::wav::write_file_as_wav;
 
@@ -55,8 +55,6 @@ pub fn process_batch(args: &Args) {
                     let gain_lin = f64::powf(10.0, args.gain / 20.0);
 
                     // ---- CONVERT BASED ON SAMPLE FORMAT ----
-                    // need to filter as f64 anyway, so best to do in
-                    // match arms here for consistency
                     match args.format {
                         SampleFormat::Int8 => {
                             let mut formatted_data: Vec<i8> = data
@@ -83,10 +81,24 @@ pub fn process_batch(args: &Args) {
                             let mut formatted_data: Vec<i16> = data
                                 .chunks_exact(2)
                                 .map(|chunks| {
-                                    // from_le_bytes() takes array of bytes and converts to a single little-endian integer
-                                    i16::from_le_bytes(
-                                        chunks.try_into().expect("Could not import as 16-bit"),
-                                    )
+                                    match &args.endian {
+                                        Endianness::Big => {
+                                            // from_le_bytes() takes array of bytes and converts to a single little-endian integer
+                                            i16::from_be_bytes(
+                                                chunks
+                                                    .try_into()
+                                                    .expect("Could not import as 16-bit"),
+                                            )
+                                        }
+                                        Endianness::Little => {
+                                            // from_le_bytes() takes array of bytes and converts to a single little-endian integer
+                                            i16::from_le_bytes(
+                                                chunks
+                                                    .try_into()
+                                                    .expect("Could not import as 16-bit"),
+                                            )
+                                        }
+                                    }
                                 })
                                 .collect();
 
@@ -140,10 +152,24 @@ pub fn process_batch(args: &Args) {
                             let mut formatted_data: Vec<i32> = data
                                 .chunks_exact(4)
                                 .map(|chunks| {
-                                    // bit-shift based on using 16-bit wav at output
-                                    i32::from_le_bytes(
-                                        chunks.try_into().expect("Could not import as 32-bit"),
-                                    )
+                                    match &args.endian {
+                                        Endianness::Big => {
+                                            // bit-shift based on using 16-bit wav at output
+                                            i32::from_le_bytes(
+                                                chunks
+                                                    .try_into()
+                                                    .expect("Could not import as 32-bit"),
+                                            )
+                                        }
+                                        Endianness::Little => {
+                                            // bit-shift based on using 16-bit wav at output
+                                            i32::from_le_bytes(
+                                                chunks
+                                                    .try_into()
+                                                    .expect("Could not import as 32-bit"),
+                                            )
+                                        }
+                                    }
                                 })
                                 .collect();
 
