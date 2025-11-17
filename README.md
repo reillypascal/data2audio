@@ -15,9 +15,9 @@ The code will default to expecting your input file(s) and/or folder(s) to be in 
 
 - `-h`, `--help` show this help message and exit
 - `-i`, `--input` subfolder in which to look for files to import (string; default "input")
+- `-o`, `--output` subfolder in which to write .WAV files (string; default "output")
 - `-a`, `--append` string to append to all filenames (before extension) (string: default "")
   - This may be useful when processing the same file(s) with multiple different settings
-- `-o`, `--output` subfolder in which to write .WAV files (string; default "output")
 - `-m`, `--min` minimum file size to convert (in bytes) — small files (< 1 MB) are often less useful (int; default 0)
 - `-s`, `--samplerate` sample rate at which to convert the incoming files to .WAV (int; default 44100)
 - `-f`, `--format` sample format in which to read the files (string: options are 'int8', 'int16', 'int24', 'int32', and 'vox'; default 'int16')
