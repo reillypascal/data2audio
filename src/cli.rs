@@ -11,6 +11,9 @@ pub struct Args {
     #[arg(short = 'o', long, default_value_t = String::from("output"))]
     pub output: String,
 
+    #[arg(short = 'a', long, default_value_t = String::from(""))]
+    pub append: String,
+
     #[arg(short = 'm', long, default_value_t = 0)]
     pub min: u64,
 

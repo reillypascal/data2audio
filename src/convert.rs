@@ -9,7 +9,7 @@ use crate::cli::{Args, Endianness, SampleFormat};
 use crate::vox;
 use crate::wav::write_file_as_wav;
 
-pub fn process_batch(args: &Args) {
+pub fn convert_dir(args: &Args) {
     WalkDir::new(&args.input)
         .into_iter()
         .par_bridge() // .par_bridge() is less effective than .into_par_iter(),
@@ -35,7 +35,17 @@ pub fn process_batch(args: &Args) {
                 // entry.path().file_name() returns an Option, so if let Some() handles/extracts value
                 if let Some(file_name) = entry.path().file_name() {
                     write_path.push(file_name);
-                    write_path.set_extension("wav");
+
+                    write_path.set_extension("");
+
+                    if !(&args.append.is_empty()) {
+                        write_path = append_to_path(write_path, &args.append);
+                    }
+
+                    // write_path.set_extension("wav");
+                    // using append prevents removing non-extension dot-separated
+                    // parts (which would also remove appended, if it exists)
+                    write_path = append_to_path(write_path, ".wav");
 
                     let mut data: Vec<u8> = vec![];
                     match fs::read(entry.path()) {
@@ -256,13 +266,11 @@ fn create_dir(dir: &str) -> std::io::Result<()> {
     fs::create_dir_all(dir)?;
     Ok(())
 }
-/*
-let fmt_num_bits = HashMap::from([
-    (SampleFormat::Uint8, 8),
-    (SampleFormat::Int16, 16),
-    (SampleFormat::Int24, 24),
-    (SampleFormat::Int32, 32),
-    (SampleFormat::Vox, 8),
-]);
-fmt_num_bits[&args.format]
-*/
+
+// ---- APPEND TO WRITE PATH ----
+// https://stackoverflow.com/a/76378247
+fn append_to_path(p: PathBuf, s: &str) -> PathBuf {
+    let mut p = p.into_os_string();
+    p.push(s);
+    p.into()
+}

@@ -2,7 +2,7 @@
 
 Takes a folder of any type of file(s) and converts all files to audio (often called “databending”). You can specify input/output paths, minimum file size, and the sample format at the input (i.e., treat incoming files as 8-bit unsigned, 16-bit integer, etc.)
 
-Filters out sub-audible frequencies and normalizes amplitudes before writing to .WAV at the output.
+Option to filter out sub-audible frequencies and normalize amplitudes before writing to .WAV at the output.
 
 ## Usage
 

@@ -2,7 +2,7 @@
 use clap::Parser;
 
 use crate::cli::Args;
-use crate::convert::process_batch;
+use crate::convert::convert_dir;
 
 // modules
 pub mod biquad;
@@ -16,7 +16,7 @@ fn main() {
     let args = Args::parse();
 
     // handles all processing
-    process_batch(&args);
+    convert_dir(&args);
 
     // // ---- GET & PROCESS FILES ----
     // // WalkDir "walks" recursively through a directory and all its subfolders
