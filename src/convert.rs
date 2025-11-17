@@ -236,25 +236,6 @@ pub fn convert_dir(args: &Args) {
                             };
                         }
                     };
-
-                    // // ---- FILTERING ----
-                    // // only filter if filter arg is set true
-                    // let output_vec: Vec<i16> = match args.filter {
-                    //     true => {
-                    //         // make filter
-                    //         let filter_params =
-                    //             AudioFilterParameters::new(FilterAlgorithm::Hpf2, 20.0, 0.707, 0.0);
-                    //         let mut filter = AudioFilter::new(&filter_params, args.samplerate);
-                    //         filter.calculate_filter_coeffs();
-                    //         let gain_lin = f64::powf(10.0, args.gain / 20.0);
-                    //         // filter audio
-                    //         converted_data
-                    //             .iter()
-                    //             .map(|sample| filter.process_sample(*sample * gain_lin) as i16)
-                    //             .collect()
-                    //     }
-                    //     false => converted_data.iter().map(|sample| *sample as i16).collect(),
-                    // };
                 }
             }
         });
