@@ -1,6 +1,8 @@
-/target
+.vscode/
+.zed/
+target/
 input/
 output/
 storage/
 .DS_Store
-.zed
+Session.vim
